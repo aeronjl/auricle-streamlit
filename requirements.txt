@@ -1,3 +1,4 @@
+fuzzywuzzy
 streamlit
 numpy
 openai
