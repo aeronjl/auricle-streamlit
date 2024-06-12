@@ -1,0 +1,1 @@
+This is a user interface for my [transcription library](https://github.com/aeronjl/transcribe) developed with the [Streamlit](https://www.streamlit.io/) library. It is a simple web application that allows users to upload audio files and transcribe them.
