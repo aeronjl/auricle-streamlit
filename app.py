@@ -44,9 +44,6 @@ def create_checkout_session(price):
     except Exception as e:
         return str(e)
 
-st.title('Auricle')
-st.image('wave.jpg')
-
 # 1. Upload an audio file
 uploaded_file = st.file_uploader("Choose a file")
 
