@@ -5,16 +5,11 @@ from pydub import AudioSegment
 
 stripe.api_key = ''
 
-def convert_audio_to_wav(input_file):
-    audio = AudioSegment.from_file(io.BytesIO(input_file.getvalue()))
-    output_buffer = io.BytesIO()
-    audio.export(output_buffer, format="wav")
-    return output_buffer.getvalue(), audio.duration_seconds
-
 @st.cache_data(show_spinner=False)
 def cache_audio(audio_file):
     # Cache the audio file
     return audio_file
+
 def calculate_price(duration_seconds, rate_per_minute=0.50):
     # Calculate the price of the transcription
     duration_minutes = duration_seconds / 60
