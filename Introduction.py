@@ -10,6 +10,7 @@ from contextlib import contextmanager
 import tempfile
 import uuid
 import ffmpeg
+import openai
 
 stripe.api_key = ''
 
@@ -47,6 +48,24 @@ def convert_to_wav(input_file):
             logger.error(f"Error converting file: {e.stderr.decode()}")
             st.error("An error occurred while processing the audio file.")
             return None
+        
+@st.cache_data(show_spinner=False)
+def transcribe_audio(audio_data):
+    try:
+        with temporary_file('.wav') as temp_audio:
+            # Write the audio data to the temporary file
+            with open(temp_audio, 'wb') as f:
+                f.write(audio_data)
+            
+            # Transcribe the audio file
+            with open(temp_audio, "rb") as audio_file:
+                transcript = openai.Audio.transcribe("whisper-1", audio_file)
+            
+            return transcript["text"]
+    except openai.error.OpenAIError as e:
+        logger.error(f"Error during transcription: {str(e)}")
+        st.error("An error occurred during transcription.")
+        return None
         
 @st.cache_data(show_spinner=False)
 def cache_audio(audio_file):
