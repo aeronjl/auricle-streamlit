@@ -10,9 +10,11 @@ from contextlib import contextmanager
 import tempfile
 import uuid
 import ffmpeg
-import openai
+from openai import OpenAI as openai
 
 stripe.api_key = ''
+
+client = openai.Client()
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
@@ -22,7 +24,7 @@ logger = logging.getLogger(__name__)
 def temporary_file(suffix=None):
     """Context manager for creating temporary files."""
     temp_dir = tempfile.gettempdir()
-    temp_file = os.path.join(temp_dir, f"{uuid.uiid4()}{suffix or ''}")
+    temp_file = os.path.join(temp_dir, f"{uuid.uuid4()}{suffix or ''}")
     try:
         yield temp_file
     finally:
@@ -59,10 +61,13 @@ def transcribe_audio(audio_data):
             
             # Transcribe the audio file
             with open(temp_audio, "rb") as audio_file:
-                transcript = openai.Audio.transcribe("whisper-1", audio_file)
+                transcript = client.audio.transcriptions.create(
+                    model = "whisper-1",
+                    file=audio_file
+                )
             
             return transcript["text"]
-    except openai.error.OpenAIError as e:
+    except Exception as e:
         logger.error(f"Error during transcription: {str(e)}")
         st.error("An error occurred during transcription.")
         return None
@@ -111,9 +116,27 @@ def create_checkout_session(price):
         return str(e)
 
 # 1. Upload an audio file
-uploaded_file = st.file_uploader("Choose a file")
+uploaded_file = st.file_uploader("Choose a media file", type=["mp3", "wav", "m4a", "mp4", "webm", "mpeg"])
 
 if uploaded_file is not None:
+    if not validate_file_type(uploaded_file):
+        st.error("Invalid file type. Please upload an audio or video file.")
+    else:
+        st.success("File uploaded successfully.")
+    
+        wav_data = convert_to_wav(uploaded_file)
+        
+        if wav_data:
+            st.success("File prepared for transcription.")
+            
+            transcription = transcribe_audio(wav_data)
+            
+            if transcription:
+                st.write("Transcription:")
+                st.write(transcription)
+
+"""    
+    # Cache the audio file
     uploaded_file = cache_audio(uploaded_file)
     with st.spinner('Processing audio file...'):
         # Check if the file is already a WAV file
@@ -172,3 +195,4 @@ with open(f"files/{option}", "r") as json_file:
         my_json = json.loads(line)
 
 st.json(my_json)
+"""
