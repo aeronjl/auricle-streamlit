@@ -1,8 +1,8 @@
 ffmpeg-python
-fuzzywuzzy
 streamlit
 numpy
 openai
 pydub
 stripe
 tiktoken
+precisetranscribe
