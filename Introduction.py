@@ -66,6 +66,15 @@ def transcribe_audio(audio_data):
         logger.error(f"Error during transcription: {str(e)}")
         st.error("An error occurred during transcription.")
         return None
+    
+def validate_file_type(file):
+    allowed_types = [
+        "audio/mpeg", "audio/mp4", "audio/x-m4a", "audio/wav", "audio/webm",
+        "video/mp4", "video/mpeg", "video/webm"
+    ]
+    if file.type not in allowed_types:
+        return False
+    return True
         
 @st.cache_data(show_spinner=False)
 def cache_audio(audio_file):
