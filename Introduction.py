@@ -2,9 +2,52 @@ import streamlit as st
 import stripe
 import io
 from pydub import AudioSegment
+import streamlit as st
+import json
+import os
+import logging
+from contextlib import contextmanager
+import tempfile
+import uuid
+import ffmpeg
 
 stripe.api_key = ''
 
+# Set up logging
+logging.basicConfig(level=logging.INFO)
+logger = logging.getLogger(__name__)
+
+@contextmanager
+def temporary_file(suffix=None):
+    """Context manager for creating temporary files."""
+    temp_dir = tempfile.gettempdir()
+    temp_file = os.path.join(temp_dir, f"{uuid.uiid4()}{suffix or ''}")
+    try:
+        yield temp_file
+    finally:
+        if os.path.exists(temp_file):
+            os.remove(temp_file)
+
+@st.cache_data(show_spinner=False)
+def convert_to_wav(input_file):
+    with temporary_file() as temp_input, temporary_file('.wav') as temp_output:
+        # Write the input file to the temporary file
+        with open(temp_input, 'wb') as f:
+            f.write(input_file.getvalue())
+        
+        try:
+            stream = ffmpeg.input(temp_input)
+            stream = ffmpeg.output(stream, temp_output, acodec='pcm_s16le', ac=1, ar='16k')
+            ffmpeg.run(stream, overwrite_output=True, capture_stdout=True, capture_stderr=True)
+            
+            # Read the output file
+            with open(temp_output, 'rb') as f:
+                return f.read()
+        except ffmpeg.Error as e:
+            logger.error(f"Error converting file: {e.stderr.decode()}")
+            st.error("An error occurred while processing the audio file.")
+            return None
+        
 @st.cache_data(show_spinner=False)
 def cache_audio(audio_file):
     # Cache the audio file
@@ -80,3 +123,24 @@ if st.query_params["session_id"]:
         except stripe.error.StripeError as e:
             st.error(f"Error: {e}")
     
+
+
+st.header("Transcription Output")
+
+current_dir = os.getcwd()
+files_dir = os.path.join(current_dir, "files")
+all_files = os.listdir(files_dir)
+json_files = [f for f in all_files if f.endswith("_final_output.json")]
+
+option = st.selectbox(
+    'Choose a transcript to display',
+    json_files
+)
+
+st.write('You selected:', option)
+
+with open(f"files/{option}", "r") as json_file:
+    for line in json_file:
+        my_json = json.loads(line)
+
+st.json(my_json)
