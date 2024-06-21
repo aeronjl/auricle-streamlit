@@ -103,14 +103,17 @@ with tab2:
     all_files = os.listdir(files_dir)
     json_files = [f for f in all_files if f.endswith("_final_output.json")]
 
-    option = st.selectbox(
-        'Choose a transcript to display',
-        json_files
-    )
-    
-    with open(f"files/{option}", "r") as json_file:
-        for line in json_file:
-            my_json = json.loads(line)
+    if len(json_files) == 0:
+        st.error("No transcripts available.")
+    else:
+        option = st.selectbox(
+            'Choose a transcript to display',
+            json_files
+        )
+        
+        with open(f"files/{option}", "r") as json_file:
+            for line in json_file:
+                my_json = json.loads(line)
 
-    if my_json:
-        st.json(my_json)
+        if my_json:
+            st.json(my_json)
