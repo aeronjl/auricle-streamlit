@@ -125,8 +125,7 @@ def viewer_tab() -> None:
         )
         
         with open(f"files/{option}", "r") as json_file:
-            for line in json_file:
-                my_json = json.loads(line)
+            my_json = json.load(json_file)
 
         if my_json:
             st.json(my_json)
