@@ -1,18 +1,15 @@
-import streamlit as st
-import stripe
-import io
-from io import BytesIO
-from pydub import AudioSegment
-import streamlit as st
-import json
-import os
-import logging
+
 from contextlib import contextmanager
+import json
+import logging
+import os
 import tempfile
 import uuid
+
 import ffmpeg
 from openai import OpenAI
 import precisetranscribe as pts
+import streamlit as st
 
 # Set up logging
 logging.basicConfig(level=logging.INFO)
