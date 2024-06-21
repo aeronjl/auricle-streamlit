@@ -124,8 +124,18 @@ def viewer_tab() -> None:
             json_files
         )
         
-        with open(f"files/{option}", "r") as json_file:
-            my_json = json.load(json_file)
+        try:
+            with open(f"files/{option}", "r") as json_file:
+                my_json = json.load(json_file)
+        except json.JSONDecodeError:
+            # If JSONDecodeError occurs (indicating poorly formatted JSON), attempt line-by-line processing
+            with open(f"files/{option}", "r") as json_file:
+                my_json = []
+                for line in json_file:
+                    try:
+                        my_json.append(json.loads(line))
+                    except json.JSONDecodeError:
+                        st.error("An error occurred while reading the JSON file.")
 
         if my_json:
             st.json(my_json)
